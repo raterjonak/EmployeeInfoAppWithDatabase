@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace UniversityManagmentApp
 {
@@ -23,6 +24,13 @@ namespace UniversityManagmentApp
             string name = nameTextBox.Text;
             string regNo = regNoTextBox.Text;
             string address = addressTextBox.Text;
+
+
+            if (IsRegNoExist(regNo))
+            {
+                MessageBox.Show("Registration Number already exist.");
+                return;
+            }
 
 
             string connectionString =@"Server=RATERJONAK;Database=UniversityManagmentDB;Integrated Security=true";
@@ -46,6 +54,32 @@ namespace UniversityManagmentApp
             {
                 MessageBox.Show("Failed!");
             }
+        }
+
+        public bool IsRegNoExist(string regNo)
+        {
+
+            bool isRegNoExist = false;
+            String connectionString = "Server=RATERJONAK;Database=UniversityManagmentDB;Integrated Security=true";
+
+            SqlConnection connection=new SqlConnection(connectionString);
+            string query = "SELECT * FROM Students WHERE RegNo='" + regNo + "'";
+
+            SqlCommand command=new SqlCommand(query,connection);
+
+            connection.Open();
+            SqlDataReader reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                isRegNoExist = true;
+                break;
+            }
+
+            reader.Close();
+            connection.Close();
+
+            return isRegNoExist;
         }
     }
 }
