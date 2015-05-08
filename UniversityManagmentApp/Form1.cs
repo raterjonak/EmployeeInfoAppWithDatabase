@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -33,7 +34,7 @@ namespace UniversityManagmentApp
             }
 
 
-            string connectionString =@"Server=RATERJONAK;Database=UniversityManagmentDB;Integrated Security=true";
+            string connectionString = ConfigurationManager.ConnectionStrings["UniversityManagmentConnString"].ConnectionString;
 
             SqlConnection connection = new SqlConnection(connectionString);
 
@@ -60,7 +61,7 @@ namespace UniversityManagmentApp
         {
 
             bool isRegNoExist = false;
-            String connectionString = "Server=RATERJONAK;Database=UniversityManagmentDB;Integrated Security=true";
+            string connectionString = ConfigurationManager.ConnectionStrings["UniversityManagmentConnString"].ConnectionString;
 
             SqlConnection connection=new SqlConnection(connectionString);
             string query = "SELECT * FROM Students WHERE RegNo='" + regNo + "'";
