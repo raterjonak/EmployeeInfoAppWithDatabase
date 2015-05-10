@@ -15,6 +15,7 @@ namespace UniversityManagmentApp
 {
     public partial class UniversityManagmentUI : Form
     {
+        string connectionString = ConfigurationManager.ConnectionStrings["UniversityManagmentConnString"].ConnectionString;
         public UniversityManagmentUI()
         {
             InitializeComponent();
@@ -33,9 +34,7 @@ namespace UniversityManagmentApp
                 return;
             }
 
-
-            string connectionString = ConfigurationManager.ConnectionStrings["UniversityManagmentConnString"].ConnectionString;
-
+            
             SqlConnection connection = new SqlConnection(connectionString);
 
             string query="INSERT INTO Students VALUES('"+name + "','" + regNo + "','" + address + "')";
@@ -55,15 +54,18 @@ namespace UniversityManagmentApp
             {
                 MessageBox.Show("Failed!");
             }
+
+            ShowAllStudent();
         }
 
         public bool IsRegNoExist(string regNo)
         {
 
             bool isRegNoExist = false;
-            string connectionString = ConfigurationManager.ConnectionStrings["UniversityManagmentConnString"].ConnectionString;
+            
 
             SqlConnection connection=new SqlConnection(connectionString);
+
             string query = "SELECT * FROM Students WHERE RegNo='" + regNo + "'";
 
             SqlCommand command=new SqlCommand(query,connection);
@@ -81,6 +83,64 @@ namespace UniversityManagmentApp
             connection.Close();
 
             return isRegNoExist;
+        }
+
+        private void showButton_Click(object sender, EventArgs e)
+        {
+       
+          ShowAllStudent();
+
+        }
+
+        public void LoadStudentListView(List<Student> students)
+        {
+            studentListView.Items.Clear();
+            foreach (var student in students)
+            {
+                ListViewItem item=new ListViewItem(student.Id.ToString());
+                item.SubItems.Add(student.Name);
+                item.SubItems.Add(student.RegNo);
+                item.SubItems.Add(student.Address);
+                studentListView.Items.Add(item);
+            }
+        }
+
+
+        public void ShowAllStudent()
+        {
+            SqlConnection connection = new SqlConnection(connectionString);
+
+            string query = "SELECT * FROM Students";
+
+            SqlCommand command = new SqlCommand(query, connection);
+
+            connection.Open();
+            SqlDataReader reader = command.ExecuteReader();
+
+            List<Student> studentList = new List<Student>();
+
+            while (reader.Read())
+            {
+                Student student = new Student();
+                student.Id = int.Parse(reader["ID"].ToString());
+                student.Name = reader["Name"].ToString();
+                student.RegNo = reader["RegNo"].ToString();
+                student.Address = Convert.ToString(reader["Address"]);
+
+                studentList.Add(student);
+
+            }
+
+            reader.Close();
+            connection.Close();
+
+            LoadStudentListView(studentList);    
+ 
+        }
+
+        private void UniversityManagmentUI_Load(object sender, EventArgs e)
+        {
+            ShowAllStudent();
         }
     }
 }
