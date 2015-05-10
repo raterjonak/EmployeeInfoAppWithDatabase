@@ -85,12 +85,7 @@ namespace UniversityManagmentApp
             return isRegNoExist;
         }
 
-        private void showButton_Click(object sender, EventArgs e)
-        {
        
-          ShowAllStudent();
-
-        }
 
         public void LoadStudentListView(List<Student> students)
         {
