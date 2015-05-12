@@ -6,6 +6,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
+using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,6 +17,8 @@ namespace UniversityManagmentApp
     public partial class UniversityManagmentUI : Form
     {
         string connectionString = ConfigurationManager.ConnectionStrings["UniversityManagmentConnString"].ConnectionString;
+        bool updateMode = false;
+        private int studentId;
         public UniversityManagmentUI()
         {
             InitializeComponent();
@@ -27,34 +30,62 @@ namespace UniversityManagmentApp
             string regNo = regNoTextBox.Text;
             string address = addressTextBox.Text;
 
-
-            if (IsRegNoExist(regNo))
+            if (updateMode)
             {
-                MessageBox.Show("Registration Number already exist.");
-                return;
-            }
+                SqlConnection connection = new SqlConnection(connectionString);
 
-            
-            SqlConnection connection = new SqlConnection(connectionString);
+                string query = "UPDATE  Students SET Name='" + name + "',Address='" + address + "' WHERE ID='"+studentId+"'";
 
-            string query="INSERT INTO Students VALUES('"+name + "','" + regNo + "','" + address + "')";
+                SqlCommand command = new SqlCommand(query, connection);
 
-            SqlCommand command=new SqlCommand(query,connection);
+                connection.Open();
+                int rowAffected = command.ExecuteNonQuery();
+                connection.Close();
 
-            connection.Open(); 
-            int rowAffected=command.ExecuteNonQuery();
-            connection.Close();
+                if (rowAffected > 0)
+                {
+                    MessageBox.Show("Your Data has been update.");
+                    saveButton.Text = "Save";
+                    updateMode = false;
+                }
 
-            if (rowAffected>0)
-            {
-                MessageBox.Show("Your Data has been saved.");
+                else
+                {
+                    MessageBox.Show(" Update Failed!");
+                }
             }
 
             else
             {
-                MessageBox.Show("Failed!");
-            }
+                if (IsRegNoExist(regNo))
+                {
+                    MessageBox.Show("Registration Number already exist.");
+                    return;
+                }
 
+
+                SqlConnection connection = new SqlConnection(connectionString);
+
+                string query = "INSERT INTO Students VALUES('" + name + "','" + regNo + "','" + address + "')";
+
+                SqlCommand command = new SqlCommand(query, connection);
+
+                connection.Open();
+                int rowAffected = command.ExecuteNonQuery();
+                connection.Close();
+
+                if (rowAffected > 0)
+                {
+                    MessageBox.Show("Your Data insertion has been saved.");
+                }
+
+                else
+                {
+                    MessageBox.Show("Insertion Failed!");
+                }
+
+            }
+           
             ShowAllStudent();
         }
 
@@ -87,18 +118,7 @@ namespace UniversityManagmentApp
 
        
 
-        public void LoadStudentListView(List<Student> students)
-        {
-            studentListView.Items.Clear();
-            foreach (var student in students)
-            {
-                ListViewItem item=new ListViewItem(student.Id.ToString());
-                item.SubItems.Add(student.Name);
-                item.SubItems.Add(student.RegNo);
-                item.SubItems.Add(student.Address);
-                studentListView.Items.Add(item);
-            }
-        }
+       
 
 
         public void ShowAllStudent()
@@ -113,6 +133,7 @@ namespace UniversityManagmentApp
             SqlDataReader reader = command.ExecuteReader();
 
             List<Student> studentList = new List<Student>();
+            
 
             while (reader.Read())
             {
@@ -133,9 +154,71 @@ namespace UniversityManagmentApp
  
         }
 
+
+        public void LoadStudentListView(List<Student> students)
+        {
+            studentListView.Items.Clear();
+            foreach (var student in students)
+            {
+                ListViewItem item = new ListViewItem(student.Id.ToString());
+                item.SubItems.Add(student.Name);
+                item.SubItems.Add(student.RegNo);
+                item.SubItems.Add(student.Address);
+                studentListView.Items.Add(item);
+            }
+        }
+
         private void UniversityManagmentUI_Load(object sender, EventArgs e)
         {
             ShowAllStudent();
+        }
+
+        private void studentListView_DoubleClick(object sender, EventArgs e)
+        {
+            ListViewItem item = studentListView.SelectedItems[0];
+            int ID = Convert.ToInt16(item.Text);
+            Student student = GetStudentById(ID);
+
+            if (student!=null)
+            {
+                updateMode = true;
+                saveButton.Text = "Update";
+                studentId = ID;
+
+                nameTextBox.Text = student.Name;
+                regNoTextBox.Text = student.RegNo;
+                addressTextBox.Text = student.Address;
+                regNoTextBox.Enabled = false;
+            }
+
+        }
+
+
+        public Student GetStudentById(int id)
+        {
+            SqlConnection connection=new SqlConnection(connectionString);
+            string query = "SELECT * FROM Students WHERE ID='" + id + "'";
+            SqlCommand command= new SqlCommand(query,connection);
+
+            connection.Open();
+            SqlDataReader reader = command.ExecuteReader();
+            List<Student>studentList= new List<Student>();
+
+            while (reader.Read())
+            {
+               Student student=new Student();
+
+                student.Id = Convert.ToInt16(reader["ID"]);
+                student.Name = reader["Name"].ToString();
+                student.RegNo = reader["RegNo"].ToString();
+                student.Address = reader["Address"].ToString();
+
+                studentList.Add(student);
+
+            }
+            reader.Close();
+            connection.Close();
+            return studentList.FirstOrDefault();
         }
     }
 }

@@ -107,6 +107,7 @@
             this.columnHeader2,
             this.columnHeader3,
             this.columnHeader4});
+            this.studentListView.FullRowSelect = true;
             this.studentListView.GridLines = true;
             this.studentListView.Location = new System.Drawing.Point(41, 178);
             this.studentListView.Name = "studentListView";
@@ -114,6 +115,7 @@
             this.studentListView.TabIndex = 7;
             this.studentListView.UseCompatibleStateImageBehavior = false;
             this.studentListView.View = System.Windows.Forms.View.Details;
+            this.studentListView.DoubleClick += new System.EventHandler(this.studentListView_DoubleClick);
             // 
             // columnHeader1
             // 
